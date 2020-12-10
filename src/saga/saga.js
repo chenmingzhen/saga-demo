@@ -1,5 +1,5 @@
 import { take, call, put, takeEvery, takeLatest } from "redux-saga/effects";
-import { CHANGE_FIRST, CHANGE_SECOND } from "../store/reducer";
+import {CHANGE_FIRST, CHANGE_SECOND, GETDATASTATE, REALGETDATA} from "../store/reducer";
 import { store } from "../store/store";
 
 const DATA = "DATA";
@@ -15,16 +15,30 @@ export function changeSecondVal() {
   store.dispatch({ type: CHANGE_SECOND, payload: { second: Math.random() } });
 }
 
+/**
+ * react-thunk
+ */
 export function triggerDelay() {
   store.dispatch(async (dispatch) => {
     const result = await new Promise((res) => {
       setTimeout(() => {
         res({ first: Math.random(), second: Math.random() });
-      });
+      },2000);
     });
 
     dispatch({ type: CHANGE_FIRST, payload: result });
   });
+}
+
+
+export function* getData(){
+  const result=yield call(()=>new Promise(res=>{
+    setTimeout(()=>{
+      res({first:Math.random()})
+    },1000)
+  }))
+  console.log(result)
+  yield put({type:REALGETDATA,payload:result})
 }
 
 
@@ -98,6 +112,7 @@ export function* callEffect() {
   });
 }
 
+
 export function* takeLatestEffect() {
   yield takeLatest(
     CHANGE_FIRST,
@@ -105,5 +120,12 @@ export function* takeLatestEffect() {
       console.log(data, action);
     },
     DATA
+  );
+}
+
+export function* SimulateAsync(){
+  yield takeLatest(
+      GETDATASTATE,
+      getData,
   );
 }
